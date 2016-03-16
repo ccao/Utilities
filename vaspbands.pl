@@ -43,7 +43,12 @@ while($_=<FILE>) {
     for($i=1;$i<$nkpts;$i++) {
       $_=<FILE>;
       @knew=split;
-      $kpt[$i]=$kpt[$i-1]+sqrt(($knew[0]-$kold[0])**2+($knew[1]-$kold[1])**2+($knew[2]-$kold[2])**2);
+      if ($i%100==0) {
+        $kpt[$i]=$kpt[$i-1];
+      }
+      else {
+        $kpt[$i]=$kpt[$i-1]+sqrt(($knew[0]-$kold[0])**2+($knew[1]-$kold[1])**2+($knew[2]-$kold[2])**2);
+      }
       @kold=@knew;
     }
   }

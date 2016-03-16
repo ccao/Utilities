@@ -1,10 +1,16 @@
 #!/usr/bin/perl
 $narg=@ARGV;
 
+$newver=0;
+
 if ($narg<2) {
   printf(" Usage: create_lambda.pl \$PREFIX \$NQPTS\n");
 }
 else {
+
+  if ( -d "elph_dir" ) {
+    $newver=1;
+  }
 
   $nqpt=$ARGV[1];
   $prefix=$ARGV[0];
@@ -35,7 +41,12 @@ else {
   }
   
   for ($i=0; $i<$nqpt; $i++) {
-    printf("elph.%9.6f.%9.6f.%9.6f\n",$qpt[$i][0],$qpt[$i][1],$qpt[$i][2]);
+    if ($newver==0) {
+      printf("elph.%9.6f.%9.6f.%9.6f\n",$qpt[$i][0],$qpt[$i][1],$qpt[$i][2]);
+    }
+    else {
+      printf("elph_dir/elph.inp_lambda.%d\n", $i+1);
+    }
   }
   
   printf(" %9.6f\n", 0.12);
