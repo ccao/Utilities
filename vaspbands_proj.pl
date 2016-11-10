@@ -35,6 +35,10 @@ $omega = $acell[0].($acell[1] x $acell[2]);
 $bvec[0]=($acell[1] x $acell[2])/$omega;
 $bvec[1]=($acell[2] x $acell[0])/$omega;
 $bvec[2]=($acell[0] x $acell[1])/$omega;
+print("# Reciprocal lattice:\n");
+for($ii=0; $ii<3; $ii++) {
+  print("#   ", $bvec[$ii], "\n");
+}
 
 $_=<FILE>;
 @spnam=split;    # Specie names
@@ -80,9 +84,19 @@ printf(" # of Bands:    %5d\n", $nbnd);
 printf(" # of atoms:    %5d\n", $nat);
 
 for($ik=0; $ik<$nkpt; $ik++) {
-  $_=<FILE>;     # blank line
-  $_=<FILE>;     # k-point    ...
-  @tmp=split;
+  do {
+    $_=<FILE>;
+    @tmp=split;
+  } while ($tmp[0] ne "k-point");   # k-point ...
+  #
+  if ($tmp[0] ne "k-point" || $ik!=($tmp[1]-1)) {
+    print "!!! ERROR: Incorrect Kpt ik=$ik";
+    print $_;
+  }
+  $tmp[3]=substr($_, 18, 11);
+  $tmp[4]=substr($_, 29, 11);
+  $tmp[5]=substr($_, 40, 11);
+  print "#  $tmp[3],$tmp[4],$tmp[5]";
   $tt1=$tmp[3] * $bvec[0];
   $tt2=$tmp[4] * $bvec[1];
   $tt3=$tmp[5] * $bvec[2];
@@ -98,14 +112,21 @@ for($ik=0; $ik<$nkpt; $ik++) {
 
   for($ib=0; $ib<$nbnd; $ib++) {
     $tw[$ib]=0.0;
-
-    $_=<FILE>;    # blank line ...
-    $_=<FILE>;    # band ....
-    @tmp=split;
+    do {
+      $_=<FILE>;
+      @tmp=split;
+    } while ($tmp[0] ne "band");     # band ...
+    #
+    if ($tmp[0] ne "band" || $ib!=($tmp[1]-1)) {
+      print "!!! ERROR: Incorrect Band ik=$ik,ib=$ib\n";
+      print $_;
+    }
     $te[$ib]=$tmp[4];  # energy
-    $_=<FILE>;    # blank line
-    $_=<FILE>;    # ion ...
-    @tmp=split;
+    do {
+      $_=<FILE>;
+      @tmp=split;
+    } while ($tmp[0] ne "ion");      # ion ...
+
     $norb=@tmp; $norb--;
     for($ii=0; $ii<$norb; $ii++) {
       $prjorb[$ii]=0;
@@ -125,11 +146,9 @@ for($ik=0; $ik<$nkpt; $ik++) {
       }
     }
     $_=<FILE>;   # tot
-    $_=<FILE>;   # blank line
   }
   push @ebnd, [ @te ];
   push @weight, [ @tw ];
-  $_=<FILE>;
   printf(" done.\n");
 }
 
@@ -137,7 +156,7 @@ close(FILE);
 
 for($i=0;$i<$nbnd;$i++) {
   for($j=0;$j<$nkpt;$j++) {
-      printf("%12.9f  %12.9f  %12.9f\n",$kpt[$j],$ebnd[$j][$i],$weight[$j][$i]);
+    printf("%12.9f  %12.9f  %12.9f\n",$kpt[$j],$ebnd[$j][$i],$weight[$j][$i]);
   }
   printf("\n");
 }

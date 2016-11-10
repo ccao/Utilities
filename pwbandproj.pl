@@ -64,7 +64,7 @@ for($ibnd=0; $ibnd<$nbnds; $ibnd++) {
 
 sub read_projection {
 
-  my $i, $iproj, $ikpts, $ibnds;
+  my $i, $iproj, $ikpts, $ibnds, $ibrav, $alat;
   my @tmp, @acell;
   
   open(FIN, $_[0]);
@@ -76,17 +76,34 @@ sub read_projection {
   $ntyp=$tmp[7];
   
   $_=<FIN>;	# Cell dimension as specified from celldm()
-  for($i=0; $i<3; $i++) {
-    $_=<FIN>;
-    @tmp=split;
-    $acell[$i]=vector($tmp[0], $tmp[1], $tmp[2]);
+  @tmp=split;
+  $ibrav=$tmp[0];
+  $alat=$tmp[1];
+  if ($ibrav==0) {
+    for($i=0; $i<3; $i++) {
+      $_=<FIN>;
+      @tmp=split;
+      $acell[$i]=vector($tmp[0], $tmp[1], $tmp[2]);
+     }
   }
-  $_=<FIN>;
+  elsif ($ibrav==1) {
+    $acell[0]=vector($alat, 0.0, 0.0);
+    $acell[1]=vector(0.0, $alat, 0.0);
+    $acell[2]=vector(0.0, 0.0, $alat);
+  }
+  elsif ($ibrav==2) {
+    $acell[0]=vector(-$alat/2.0, 0.0, $alat/2.0);
+    $acell[1]=vector( 0.0, $alat/2.0, $alat/2.0);
+    $acell[2]=vector(-$alat/2.0, $alat/2.0, 0.0);
+  }
 
   $omega = $acell[0].($acell[1] x $acell[2]);
   $bvec[0]=($acell[1] x $acell[2])/$omega;
   $bvec[1]=($acell[2] x $acell[0])/$omega;
   $bvec[2]=($acell[0] x $acell[1])/$omega;
+
+  $_=<FIN>;
+
 
   for($i=0; $i<$ntyp; $i++) {	# Type information
     $_=<FIN>;

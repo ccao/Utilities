@@ -31,15 +31,15 @@ while(<>) {
     }
     printf("\n");
   }
-  if( /<AT /){
-    printf("Basis vectors\n");
-    for($i=0; $i<3; $i++) {
-      $_=<>;
-      @tmp=split;
-      push @at, [ @tmp ];
-      printf("  %15.9f%15.9f%15.9f\n", $at[$i][0], $at[$i][1], $at[$i][2]);
-    }
-  }
+#  if( /<AT /){
+#    printf("Basis vectors\n");
+#    for($i=0; $i<3; $i++) {
+#      $_=<>;
+#      @tmp=split;
+#      push @at, [ @tmp ];
+#      printf("  %15.9f%15.9f%15.9f\n", $at[$i][0], $at[$i][1], $at[$i][2]);
+#    }
+#  }
     
   if( /<TYPE_NAME/) {
     $ityp++;
@@ -120,4 +120,5 @@ while(<>) {
       pop @disp;
     }
   }
+  printf(" **************************************************************************\n");
 }
