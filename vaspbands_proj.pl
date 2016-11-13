@@ -2,20 +2,24 @@
 # Simple input file:
 # line 1: Fe    ! atoms to project
 # line 2: dz2   ! orbitals to project
-#
+# line 3: 72    ! Number of kpts to be skipped
+
 use Math::VectorReal;
 
 $Math::VectorReal::FORMAT = " %12.9f %12.9f %12.9f ";
 # Get input
-
-open(FILE, "input");
-$_=<FILE>;
-@tgatm=split;
-$_=<FILE>;
-@tgorb=split;
-$ntgatm=@tgatm;
-$ntgorb=@tgorb;
-close(FILE);
+#
+ open(FILE, "input");
+ $_=<FILE>;
+ @tgatm=split;
+ $_=<FILE>;
+ @tgorb=split;
+ $ntgatm=@tgatm;
+ $ntgorb=@tgorb;
+ $_=<FILE>;
+ @tmp=split;
+ $nskip=$tmp[0];
+ close(FILE);
 
 # Get POSCAR information ( the atom names )
 
@@ -35,10 +39,6 @@ $omega = $acell[0].($acell[1] x $acell[2]);
 $bvec[0]=($acell[1] x $acell[2])/$omega;
 $bvec[1]=($acell[2] x $acell[0])/$omega;
 $bvec[2]=($acell[0] x $acell[1])/$omega;
-print("# Reciprocal lattice:\n");
-for($ii=0; $ii<3; $ii++) {
-  print("#   ", $bvec[$ii], "\n");
-}
 
 $_=<FILE>;
 @spnam=split;    # Specie names
@@ -87,16 +87,7 @@ for($ik=0; $ik<$nkpt; $ik++) {
   do {
     $_=<FILE>;
     @tmp=split;
-  } while ($tmp[0] ne "k-point");   # k-point ...
-  #
-  if ($tmp[0] ne "k-point" || $ik!=($tmp[1]-1)) {
-    print "!!! ERROR: Incorrect Kpt ik=$ik";
-    print $_;
-  }
-  $tmp[3]=substr($_, 18, 11);
-  $tmp[4]=substr($_, 29, 11);
-  $tmp[5]=substr($_, 40, 11);
-  print "#  $tmp[3],$tmp[4],$tmp[5]";
+  } while ($tmp[0] ne "k-point");  # skip blank lines until 'k-point'
   $tt1=$tmp[3] * $bvec[0];
   $tt2=$tmp[4] * $bvec[1];
   $tt3=$tmp[5] * $bvec[2];
@@ -112,21 +103,16 @@ for($ik=0; $ik<$nkpt; $ik++) {
 
   for($ib=0; $ib<$nbnd; $ib++) {
     $tw[$ib]=0.0;
+
     do {
       $_=<FILE>;
       @tmp=split;
-    } while ($tmp[0] ne "band");     # band ...
-    #
-    if ($tmp[0] ne "band" || $ib!=($tmp[1]-1)) {
-      print "!!! ERROR: Incorrect Band ik=$ik,ib=$ib\n";
-      print $_;
-    }
+    } while ($tmp[0] ne "band");    # skip blank lines unitl 'band'
     $te[$ib]=$tmp[4];  # energy
     do {
-      $_=<FILE>;
+      $_=<FILE>;    # ion ...
       @tmp=split;
-    } while ($tmp[0] ne "ion");      # ion ...
-
+    } while ($tmp[0] ne "ion");     # skip blank lines until 'ion'
     $norb=@tmp; $norb--;
     for($ii=0; $ii<$norb; $ii++) {
       $prjorb[$ii]=0;
@@ -149,14 +135,16 @@ for($ik=0; $ik<$nkpt; $ik++) {
   }
   push @ebnd, [ @te ];
   push @weight, [ @tw ];
+  $_=<FILE>;
   printf(" done.\n");
 }
 
 close(FILE);
 
 for($i=0;$i<$nbnd;$i++) {
-  for($j=0;$j<$nkpt;$j++) {
-    printf("%12.9f  %12.9f  %12.9f\n",$kpt[$j],$ebnd[$j][$i],$weight[$j][$i]);
+  for($j=$nskip;$j<$nkpt;$j++) {
+      printf("%12.9f  %12.9f  %12.9f\n",$kpt[$j]-$kpt[$nskip],$ebnd[$j][$i],$weight[$j][$i]);
   }
   printf("\n");
 }
+
