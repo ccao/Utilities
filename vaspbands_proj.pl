@@ -88,6 +88,8 @@ for($ik=0; $ik<$nkpt; $ik++) {
     $_=<FILE>;
     @tmp=split;
   } while ($tmp[0] ne "k-point");  # skip blank lines until 'k-point'
+  s/-([0-9])/ -$1/g;
+  @tmp=split;
   $tt1=$tmp[3] * $bvec[0];
   $tt2=$tmp[4] * $bvec[1];
   $tt3=$tmp[5] * $bvec[2];
