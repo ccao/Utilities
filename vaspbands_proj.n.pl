@@ -99,8 +99,8 @@ for($ik=0; $ik<$nkpt; $ik++) {
   if ($ik==0) {
     $kpt[$ik]=0.0;
   }
-  elsif($i%$Kpoints_Per_Path==0) {
-     $kpt[$i]=$kpt[$i-1];
+  elsif($ik%$Kpoints_Per_Path==0) {
+     $kpt[$ik]=$kpt[$ik-1];
   }
   else {
     $kv=$kvec[$ik]-$kvec[$ik-1];
