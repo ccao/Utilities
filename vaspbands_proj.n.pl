@@ -9,6 +9,7 @@ use Math::VectorReal;
 $Math::VectorReal::FORMAT = " %12.9f %12.9f %12.9f ";
 # Get input
 #
+$Kpoints_Per_Path=100;
  open(FILE, "input");
  $_=<FILE>;
  @tgatm=split;
@@ -98,6 +99,9 @@ for($ik=0; $ik<$nkpt; $ik++) {
   if ($ik==0) {
     $kpt[$ik]=0.0;
   }
+  elsif($ik%$Kpoints_Per_Path==0) {
+     $kpt[$ik]=$kpt[$ik-1];
+  }
   else {
     $kv=$kvec[$ik]-$kvec[$ik-1];
     $kpt[$ik]=$kpt[$ik-1]+$kv->length;
@@ -146,6 +150,13 @@ close(FILE);
 for($i=0;$i<$nbnd;$i++) {
   for($j=$nskip;$j<$nkpt;$j++) {
       printf("%12.9f  %12.9f  %12.9f\n",$kpt[$j]-$kpt[$nskip],$ebnd[$j][$i],$weight[$j][$i]);
+    if(($j+1)%$Kpoints_Per_Path==0){
+       if($i==0){
+               $xn=($j+1)/$Kpoints_Per_Path;
+               warn "x$xn = $kpt[$j]";
+       }
+      printf("\n");
+    }
   }
   printf("\n");
 }
